@@ -1,24 +1,16 @@
-# streamlit_app.py
-import streamlit as st
-import sqlalchemy
-
 
 import pymysql as mys
 import pandas as pd
-
-
-
-
-
 import streamlit as st
 
-# Everything is accessible via the st.secrets dict:
 
-st.write("DB username:", st.secrets["db_username"])
-#st.write("DB password:", st.secrets["db_password2"])
-st.write("DB username:", st.secrets["user"])
-st.write("DB password:", st.secrets["password"])
+pripojeni_na_DB = mys.connect(
+    host= st.secrets["host"], 
+    port = st.secrets["port"],
+    database= st.secrets["database"],
+    password= st.secrets["password"],
+    user= st.secrets["user"]
+    )
 
-
-conn = st.connection("ahoj", type = "sql")
-
+df_zamestnanci = pd.read_sql_query("select * from EMP", con=pripojeni_na_DB)
+st.write(df_zamestnanci)
