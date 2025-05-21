@@ -6,34 +6,23 @@ import sqlalchemy
 import pymysql as mys
 import pandas as pd
 
-# já jsem si to ještě profesionálně obalil do try a except, abych viděl, zda se povedlo nebo ne
 
-# POZOR - pokud se připojuju na DB, musím být mimo VPN 
-# pripojeni_na_DB = mys.connect(
-#     host= "mysql57.r2.websupport.sk", 
-#     port = 3311,
-#     database="Kurz_SQL",
-#     password= "",
-#     user= "Kurz_SQL"
-#         )
-# st.write("All good - complete")
-
-# df_zamestnanci_all = pd.read_sql_query("select * from EMP", con=pripojeni_na_DB)
-# st.write(df_zamestnanci_all)
 
 
 
 import streamlit as st
 
-host=st.secrets.db_credentials.host,
-user=st.secrets.db_credentials.user,
-password=st.secrets.db_credentials.password,
-db=st.secrets.db_credentials.database
+# Everything is accessible via the st.secrets dict:
 
-st.write("DB username:", st.secrets["user"])
+st.write("DB username:", st.secrets["db_username"])
 st.write("DB password:", st.secrets["db_password"])
 
-# conn = st.connection('db_credentials', type='sql')
-# pet_owners = conn.query('select * from EMP')
-# st.dataframe(pet_owners)
+# And the root-level secrets are also accessible as environment variables:
+
+import os
+
+st.write(
+    "Has environment variables been set:",
+    os.environ["db_username"] == st.secrets["db_username"],
+)
 
