@@ -4,3 +4,4 @@ pymysql
 lxml
 plotly.express
 pandasql
+mysql.connector
