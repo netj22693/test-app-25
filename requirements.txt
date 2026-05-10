@@ -6,3 +6,4 @@ lxml
 plotly.express
 pandasql
 mysql.connector
+python-dotenv
