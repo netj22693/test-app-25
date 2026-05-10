@@ -7,6 +7,10 @@ from typing import Optional
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
+# Only for local testing - PROD uses Github Actions secrets
+if os.path.exists(".env"):
+    load_dotenv()
+
 # For debbugging
 print("RUN AT:", datetime.now(timezone.utc))
 
@@ -206,6 +210,7 @@ def main():
 
     try:
         insert_exchange_rate_data(conn, mapped_data_exhange_rate_table, api_1_reason, api_2_reason)
+        print("All complete")
 
 
 
