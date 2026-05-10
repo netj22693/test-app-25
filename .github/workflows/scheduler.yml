@@ -1,0 +1,32 @@
+name: Exchange Rate Scheduler
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 minutes
+  workflow_dispatch:        # manual triggering from GitHub Actions
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests sqlalchemy psycopg2-binary
+
+      - name: Run script
+        env:
+          NEON_DB_PASSWORD: ${{ secrets.NEON_DB_PASSWORD }}
+          NEON_DB_ENDPOINT: ${{ secrets.NEON_DB_ENDPOINT }}
+          F5_API_2_PASSWORD: ${{ secrets.F5_API_2_PASSWORD }}
+        run: |
+          python refresh_api_scheduler.py
