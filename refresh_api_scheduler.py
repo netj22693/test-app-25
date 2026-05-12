@@ -1,7 +1,7 @@
 import os
 import requests
 import json
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float,DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float,DateTime, BigInteger
 from sqlalchemy.orm import declarative_base, Session
 from typing import Optional
 from datetime import datetime, timezone
@@ -100,10 +100,37 @@ def api_2_freecurrency_parsing(data_input: str) -> Optional[float]:
         return eur_to_usd_rate_parsed, state, reason
 
 
+def get_run_context() -> dict:
+    '''
+    Function for logging purposes to be able to track the schedulers run from Github Actions
+    Outcome dict -> values saved into DB
+    '''
+
+    run_id = os.getenv("GITHUB_RUN_ID")
+    repo = os.getenv("GITHUB_REPOSITORY")
+    url_link = f"https://github.com/{repo}/actions/runs/{run_id}"
+
+    # ----- For test purposes ----- 
+    # test = {
+    #     "run_id": "111111112",
+    #     "repo": "https://github.com/netj22693/backup-app-jn/actions/runs/111111111",
+    #     "event": "test_from_codespace",
+    #     }
+
+    prod = {
+        "run_id": run_id,
+        "repo": url_link,
+        "event": os.getenv("GITHUB_EVENT_NAME"),
+    }
+
+    return prod
+
+
 def insert_exchange_rate_data(engine, data, reason_1, reason_2):
 
-    Base = declarative_base()
+    env_logs = get_run_context()
 
+    Base = declarative_base()
 
     class Rate(Base):
         __tablename__ = "exchange_rate_data"
@@ -138,6 +165,16 @@ def insert_exchange_rate_data(engine, data, reason_1, reason_2):
         id = Column(Integer, primary_key=True, autoincrement=True)
         exchange_rate_id = Column(Integer)
         failure = Column(String)
+    
+    class Scheduler(Base):
+        __tablename__ = "scheduler"
+        __table_args__ = {"schema": "function5"}     
+
+        id = Column(Integer, primary_key=True, autoincrement=True)   
+        exchange_rate_id = Column(Integer)
+        github_run_id = Column(BigInteger)
+        github_run_url = Column(String)
+        event = Column(String)
 
         
     with Session(engine) as session:
@@ -163,6 +200,15 @@ def insert_exchange_rate_data(engine, data, reason_1, reason_2):
                         failure=reason_2
                     )
                 )
+
+            session.add(
+                Scheduler(
+                    exchange_rate_id=rate_id,
+                    github_run_id=env_logs["run_id"],
+                    github_run_url=env_logs["repo"], 
+                    event=env_logs["event"]
+                )
+            )
 
             session.commit()
 
@@ -219,4 +265,8 @@ def main():
     
 if __name__ == "__main__":
     main()
+
+# ----- For test purposes ----- 
+# if st.button("test"):
+#     main()
     
