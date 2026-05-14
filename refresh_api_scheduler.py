@@ -146,11 +146,11 @@ def insert_exchange_rate_data(engine, data, reason_1, reason_2):
         id = Column(Integer, primary_key=True, autoincrement=True)
         created_at = Column(DateTime(timezone=True))
 
-        cz_to_eur = Column(Float)
-        cz_to_eur_state = Column(String)
+        eur_to_czk = Column(Float)
+        eur_to_czk_state = Column(String)
 
-        cz_to_usd = Column(Float)
-        cz_to_usd_state = Column(String)
+        usd_to_czk = Column(Float)
+        usd_to_czk_state = Column(String)
 
         eur_to_usd = Column(Float)
         eur_to_usd_state = Column(String)
@@ -259,10 +259,10 @@ def main():
 
     # mapping 
     mapped_data_exhange_rate_table = {
-        "cz_to_eur": eur_rate,
-        "cz_to_eur_state": api_1_state,
-        "cz_to_usd" : usd_rate,
-        "cz_to_usd_state" : api_1_state,
+        "eur_to_czk": eur_rate,
+        "eur_to_czk_state": api_1_state,
+        "usd_to_czk" : usd_rate,
+        "usd_to_czk_state" : api_1_state,
         "eur_to_usd": eur_to_usd_rate,
         "eur_to_usd_state" : api_2_state
         }
