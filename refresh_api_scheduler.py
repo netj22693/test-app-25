@@ -6,6 +6,7 @@ from sqlalchemy.orm import declarative_base, Session
 from typing import Optional
 from datetime import datetime, timezone
 from dotenv import load_dotenv
+# import streamlit as st
 
 # Only for local testing - PROD uses Github Actions secrets
 if os.path.exists(".env"):
@@ -111,22 +112,28 @@ def get_run_context() -> dict:
     url_link = f"https://github.com/{repo}/actions/runs/{run_id}"
 
     # ----- For test purposes ----- 
-    # test = {
-    #     "run_id": "111111112",
-    #     "repo": "https://github.com/netj22693/backup-app-jn/actions/runs/111111111",
-    #     "event": "test_from_codespace",
-    #     }
+    test = {
+        "run_id": "111111112",
+        "run_url": "https://github.com/netj22693/backup-app-jn/actions/runs/111111111",
+        "event": "test_from_codespace",
+        "repo": repo
+        }
 
     prod = {
         "run_id": run_id,
-        "repo": url_link,
+        "run_url": url_link,
         "event": os.getenv("GITHUB_EVENT_NAME"),
+        "repo": repo
     }
 
     return prod
+    #return test
 
 
 def insert_exchange_rate_data(engine, data, reason_1, reason_2):
+
+
+    actual_time = datetime.now(timezone.utc)
 
     env_logs = get_run_context()
 
@@ -137,7 +144,7 @@ def insert_exchange_rate_data(engine, data, reason_1, reason_2):
         __table_args__ = {"schema": "function5"}
 
         id = Column(Integer, primary_key=True, autoincrement=True)
-        created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+        created_at = Column(DateTime(timezone=True))
 
         cz_to_eur = Column(Float)
         cz_to_eur_state = Column(String)
@@ -175,11 +182,16 @@ def insert_exchange_rate_data(engine, data, reason_1, reason_2):
         github_run_id = Column(BigInteger)
         github_run_url = Column(String)
         event = Column(String)
+        run_at = Column(DateTime(timezone=True))
+        github_repo = Column(String)
 
         
     with Session(engine) as session:
 
-            new_rate = Rate(**data)
+            new_rate = Rate(
+                created_at=actual_time,
+                **data
+            )
             session.add(new_rate)
 
             session.flush()
@@ -205,8 +217,10 @@ def insert_exchange_rate_data(engine, data, reason_1, reason_2):
                 Scheduler(
                     exchange_rate_id=rate_id,
                     github_run_id=env_logs["run_id"],
-                    github_run_url=env_logs["repo"], 
-                    event=env_logs["event"]
+                    github_run_url=env_logs["run_url"], 
+                    event=env_logs["event"],
+                    run_at = actual_time,
+                    github_repo=env_logs["repo"]
                 )
             )
 
@@ -245,7 +259,6 @@ def main():
 
     # mapping 
     mapped_data_exhange_rate_table = {
-        "created_at": datetime.now(timezone.utc),
         "cz_to_eur": eur_rate,
         "cz_to_eur_state": api_1_state,
         "cz_to_usd" : usd_rate,
